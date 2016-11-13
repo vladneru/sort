@@ -1,193 +1,148 @@
-// ConsoleApplication21.cpp: определяет точку входа для консольного приложения.
-//
-
-// SortBigFiles.cpp: определяет точку входа для консольного приложения.
+// ConsoleApplication22.cpp: определяет точку входа для консольного приложения.
 //
 
 #include "stdafx.h"
-
-#include <stdio.h>
-#include <string>
 #include <iostream>
-#include <vector>
 #include <fstream>
-#include <list>
+#include <string>
+#include <vector>
+#include <list>// ?
 #include <iterator>
 #include <algorithm>
-#include <io.h>
-#include <stdlib.h>
-#include <sstream>
-#include <map>
-#include <locale.h>
 using namespace std;
 
-class File_Work {
-public:
-	File_Work(string name);
+struct Vlad {
 
-private:
-ifstream mini_block;//файл
-string mini_line;
+	int vladik;
 };
 
-File_Work::File_Work(string name):mini_block(name) {
-	if (mini_block) {
-		getline(mini_block,mini_line);
-	}
-}
 
-
-
-template <typename T>
-class SortFile {
+class B {
 public:
-	auto Open_Division()->const void;//разделение на блоки исходного файла в соответствии с памятью в буфере
-	auto CreateNewFile()->void;// create Block_File
-
-	SortFile(string name);//открытие файла и вызов open_division
-	SortFile();
-	auto isOpened()->bool;//проверка открылся ли файл
-	auto FileSize(string s)->int;//получаем размер файла
-	auto Sort(const string file_name)->void;
-	auto make_file(const string file_name)->void;
-	auto link_sort(string line2)->void;
-
+	B(string name_main_file);
+	auto division()->void;
+	auto file_size(string name_file)->size_t;
+	auto make_file(string name_file)->void;
+	auto file_sort()->void;
+	auto open_streams()->void;
 private:
-	size_t size_avail_buff;//доступная операционная память 
-	fstream file;//файл
-	string main_file;//имя исходного файла
-	size_t buff;//размер буфера
-	list<string> lines;
-	map<string, ifstream> temp_files;
-	vector<string> file_names;
-
+	fstream file;
+	bool out;
+	size_t buffer, count_of_files;
+	vector<string> lines;
 };
 
-template<typename T>
-auto SortFile<T>::link_sort(string line2)->void {
-
-	temp_files.emplace(line, ifstream(file_name));
-	getline(temp_files[line], line2);
-	cout << line2 << "TUT" << endl;
-	link_sort(line2);
-}
-
-
-template<typename T>
-auto SortFile<T>::Sort(const string file_name)->void {
-	
-	string line, temp_line, main_line,line2;
-	int i = 0;
-	ifstream temp(file_name);
-	while (!temp.eof()) {
-		getline(temp, line);
-		temp_line = line.substr(0, line.find(' ')) + "\n";
-		main_line = line;
-		lines.push_back(temp_line);
-		if (i == 0) {
-			
-		}
-		i++;
+B::B(string name_main_file) :file(name_main_file), buffer(100), count_of_files(0),out(true) {
+	if (file.is_open()) {
+		division();
 	}
-	lines.sort();
+};
+
+auto B::make_file(string name_file)->void {
+	std::sort(lines.begin(),lines.end());
+	ofstream temp(name_file);
+	for (auto i : lines)
+	{
+		temp << i;
+		if (i != *(--lines.end())) temp << endl;
+	}
 	temp.close();
-
-	ofstream my(file_name, ios::out);
-	copy(lines.begin(), lines.end(), ostream_iterator<string>(my, ""));
-	my.close();
 	lines.clear();
+}
+
+auto B::file_size(string name_file)->size_t { // TESTED
+	long fsize;
+	ifstream temp(name_file);
+	temp.seekg(0, ios::end);
+	fsize = temp.tellg();
+	temp.close();
+	return fsize;
+
+}
+
+
+bool ya(string* p, int k)
+{
+	for (int i = 0; i < k; ++i) if (p[i] != "яяя") return false;
+	return true;
+}
+
+auto B::open_streams()->void {
 	
 
 }
 
 
-template<typename T>
-SortFile<T>::SortFile(string name) : file(name), main_file(name), buff(100) {
-	if (isOpened() == true) Open_Division();
-}
 
-template <typename T>
-auto SortFile<T>::isOpened()->bool {
-	return file.is_open();
-}
+auto B::file_sort()->void {
 
+	ifstream *files_streams = new ifstream[count_of_files];
+	for (int i = 1; i <= count_of_files; i++) {
+		files_streams[i].open(to_string(i) + ".txt");
+	}
 
-template <typename T>
-auto  SortFile<T>::FileSize(string s)->int {
-	long fsize;
-	FILE *o = fopen(s, "rb");
-	fsize = _filelength(_fileno(o));
-	fclose(o);
-	return fsize;
-}
+	string *top_line = new string[count_of_files];
+	for (int i = 1; i <= count_of_files; i++)
+	{
+		getline(files_streams[i], top_line[i]);
+	}
 
-template<typename T>
-auto SortFile<T>::make_file(const string file_name)->void
-{
-	ofstream ofile(file_name);
-	copy(lines.begin(), lines.end(), ostream_iterator<string>(ofile,""));
-	ofile.close();
-	file_names.push_back(file_name);
-	lines.clear();
-	Sort(file_name);
-}
-
-
-
-template<typename T>
-auto SortFile<T>::Open_Division()->const void {
-	size_t i = 0;
-	size_t SizeOfList=0;
-	string line, temp_line;
-	while (!file.eof()) {
-		
-		getline(file, line);
-		temp_line = line.substr(0, line.find('\n'));
-		SizeOfList += temp_line.size()+2;
-		
-		if (SizeOfList <= 100) {
-			lines.push_back(temp_line);
-			lines.push_back("\n");
+	while (!ya(top_line, count_of_files)) {
+		string temp_min_line = top_line[0];
+		int k_min = 0;
+		for (int i = 0; i < count_of_files; ++i)
+		{
+			if (top_line[i] < temp_min_line)
+			{
+				temp_min_line = top_line[i];
+				k_min = i;
+			}
+		}
+		ofstream file("out.txt", ios::app);
+		file << temp_min_line << endl;
+		file.close();
+		if (!files_streams[k_min].eof())
+		{
+			string s_new;
+			getline(files_streams[k_min], s_new);
+			top_line[k_min] = s_new;
 		}
 		else {
-			lines.pop_back();
-			i++;
-			make_file(to_string(i)+".txt");
-			lines.push_back(temp_line+"\n");
-			SizeOfList = temp_line.size()+2;
-			
+			top_line[k_min] = "яяя";
+		}
+
+	}
+	for (int i = 0; i < count_of_files; ++i) files_streams[i].close();
+}
+
+
+auto B::division()->void {
+	string line_of_file;
+	size_t temp_size_files=0;
+	while (!file.eof()) {
+		getline(file, line_of_file);
+		temp_size_files += line_of_file.size()+2;
+		if (temp_size_files <= buffer) {
+			lines.push_back(line_of_file);
+		}
+		else {
+			count_of_files++;
+			make_file(to_string(count_of_files)+".txt");
+			lines.push_back(line_of_file);
+			temp_size_files = line_of_file.size();
 		}
 	}
-	
 	file.close();
+	file_sort();
 };
-
-
-
-int file_exist(const char *filename)
-{
-	struct stat   buffer;
-	return (stat(filename, &buffer) == 0);
-}
-
-template<typename T>
-auto SortFile<T>::CreateNewFile()->string{
-	
-	
-	
-	
-	
-}
 
 
 int main()
 {
-	setlocale(LC_ALL, "rus");
-	SortFile<int> newfile("names.txt");
+	B obj("names.txt");
+
 
 	system("pause");
-	return 0;
-
+    return 0;
 }
-
 
